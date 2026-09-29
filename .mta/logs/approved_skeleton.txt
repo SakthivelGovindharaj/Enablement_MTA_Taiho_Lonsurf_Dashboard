@@ -1,0 +1,1605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title><!--SLOT--></title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Serif:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<style>
+:root {
+color-scheme: light;
+--surface-page: #F4F8FA;
+--surface-chart: #FFFFFF;
+--text-primary: #0D1F28;
+--text-secondary: #2E4A5A;
+--text-muted: #5E7A8A;
+--grid: #DDE6EA;
+--axis: #DDE6EA;
+--border-hairline: #DDE6EA;
+--brand-primary: #C;
+--brand-secondary: #C;
+--brand-navy: #C;
+--bg-dark: #0B1E2A;
+--text-on-dark: #E2EEF3;
+--text-on-dark-muted: #7AA5B8;
+--series-1: #ED8B00;
+--series-2: #007398;
+--series-3: #5FA37A;
+--series-4: #8B024D;
+--series-5: #4A4A6A;
+--series-6: #e34948;
+--status-good: #5FA37A;
+--radius-sm: 4px;
+--radius-md: 8px;
+--radius-lg: 12px;
+}
+@media (prefers-color-scheme: dark) {
+:root {
+--surface-page: #0B1E2A;
+--surface-chart: #122A38;
+--text-primary: #E2EEF3;
+--text-secondary: #7AA5B8;
+--text-muted: #5E7A8A;
+--grid: rgba(255,255,255,.08);
+--axis: rgba(255,255,255,.12);
+--border-hairline: rgba(255,255,255,0.10);
+--series-1: #ED8B00;
+--series-2: #007398;
+--series-3: #5FA37A;
+--series-4: #8B024D;
+--series-5: #4A4A6A;
+--series-6: #e66767;
+--status-good: #5FA37A;
+}
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+font-family: 'IBM Plex Sans', system-ui, sans-serif;
+background: var(--surface-page);
+color: var(--text-primary);
+min-height: 100vh;
+-webkit-font-smoothing: antialiased;
+}
+.dashboard-header {
+background: var(--bg-dark);
+color: var(--text-on-dark); padding: 20px 32px; display: flex; align-items: center; gap: 20px;
+}
+.dashboard-header .logo {
+width: 48px; height: 48px; border-radius: 12px;
+background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center;
+font-size: 20px; font-weight: 800; flex-shrink: 0;
+}
+.dashboard-header h1 { font-family: 'IBM Plex Serif', serif; font-size: 18px; font-weight: 400; letter-spacing: 0; }
+.dashboard-header h1 span { color: var(--brand-primary); }
+.dashboard-header .header-product-label { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-on-dark-muted); font-weight: 500; margin-bottom: 3px; }
+.dashboard-header p { font-size: 12px; color: var(--text-on-dark-muted); margin-top: 3px; max-width: 560px; font-weight: 300; line-height: 1.5; }
+.tab-bar {
+display: flex; gap: 0; background: var(--bg-dark); border-bottom: 1px solid rgba(255,255,255,.06);
+padding: 0 32px; overflow-x: auto;
+}
+.tab-btn {
+padding: 12px 16px; border: none; background: none; cursor: pointer;
+font-size: 10.5px; font-weight: 500; color: var(--text-on-dark-muted); white-space: nowrap;
+letter-spacing: .06em; text-transform: uppercase;
+border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s;
+}
+.tab-btn:hover { color: var(--text-on-dark); }
+.tab-btn.active { color: var(--brand-primary); border-bottom-color: var(--brand-primary); }
+.tab-panel { display: none; padding: 24px 32px; }
+.tab-panel.active { display: block; }
+.tab-panel-nopad { padding: 0; }
+/* Stat tiles — dataviz figure contract */
+.kpi-row { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
+.stat-tile {
+background: var(--surface-chart); border-radius: 12px; padding: 20px 24px; min-width: 160px; flex: 1;
+border: 1px solid var(--border-hairline);
+}
+.stat-tile-label {
+font-size: 9.5px; color: var(--text-muted); text-transform: uppercase;
+letter-spacing: 0.1em; font-weight: 500; margin-bottom: 8px;
+}
+.stat-tile-value {
+font-family: 'IBM Plex Serif', serif;
+font-size: 32px; font-weight: 300; color: var(--text-primary);
+line-height: 1; letter-spacing: -1px;
+}
+/* Charts grid */
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 16px; }
+.chart-card {
+background: var(--surface-chart); border-radius: var(--radius-lg); padding: 24px 24px 18px;
+border: 1px solid var(--border-hairline); height: 340px;
+box-shadow: 0 1px 5px rgba(0,0,0,.05);
+}
+/* Insights popup */
+.insights-trigger {
+display: inline-block; background: var(--brand-primary); color: #fff;
+padding: 10px 20px; border-radius: 8px; font-weight: 700; font-size: 13px;
+cursor: pointer; margin-bottom: 20px; transition: transform 0.15s;
+}
+.insights-trigger:hover { transform: scale(1.02); }
+.insights-popup {
+display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+background: var(--surface-chart); border-radius: 16px; padding: 32px; width: 500px; max-width: 90vw;
+box-shadow: 0 20px 60px rgba(0,0,0,0.25); z-index: 1000; border: 1px solid var(--border-hairline);
+}
+.insights-popup.open { display: block; }
+.insights-popup h3 { color: var(--brand-primary); margin-bottom: 16px; font-size: 16px; }
+.insights-popup ol { padding-left: 20px; line-height: 1.8; font-size: 14px; color: var(--text-primary); }
+.insights-close {
+position: absolute; top: 12px; right: 16px; font-size: 22px; cursor: pointer;
+color: var(--text-muted); line-height: 1;
+}
+.insights-close:hover { color: var(--brand-primary); }
+/* Attribution section */
+.attr-section { margin-bottom: 32px; }
+.section-title { font-family: 'IBM Plex Serif', serif; font-size: 18px; font-weight: 400; color: var(--text-primary); margin-bottom: 4px; }
+.section-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5; }
+.attr-toggle {
+display: flex; gap: 0; margin-bottom: 20px; border-radius: 8px; overflow: hidden;
+border: 1px solid var(--axis); width: fit-content;
+}
+.attr-model-btn {
+padding: 10px 20px; border: none; background: var(--surface-chart); cursor: pointer;
+font-size: 12px; font-weight: 700; color: var(--text-secondary); transition: all 0.15s;
+}
+.attr-model-btn:not(:last-child) { border-right: 1px solid var(--grid); }
+.attr-model-btn.active { background: var(--brand-primary); color: #fff; }
+.attr-model-btn:hover:not(.active) { background: var(--grid); }
+/* Attribution Evidence Tier */
+.evidence-tier { background: var(--bg-dark); border-bottom: 1px solid rgba(255,255,255,.07); }
+.evidence-inner { max-width: 1440px; margin: 0 auto; padding: 26px 32px 30px; }
+.evidence-label { font-size: 10px; letter-spacing: .13em; text-transform: uppercase; color: var(--text-on-dark-muted); font-weight: 500; margin-bottom: 16px; }
+.attr-filters-row { display: flex; gap: 16px; align-items: flex-end; margin-bottom: 22px; flex-wrap: wrap; }
+.attr-filter-group { display: flex; flex-direction: column; gap: 5px; }
+.attr-filter-label { font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-on-dark-muted); font-weight: 500; }
+.attr-filter-select { background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); color: var(--text-on-dark); font-family: inherit; font-size: 13px; padding: 6px 28px 6px 10px; border-radius: var(--radius-sm); cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237AA5B8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; min-width: 120px; transition: border-color .15s; }
+.attr-filter-select:focus { outline: none; border-color: var(--brand-primary); }
+.attr-filter-select option { color: #1a1a2e; background: #fff; }
+.attr-filter-divider { width: 1px; height: 32px; background: rgba(255,255,255,.1); align-self: flex-end; margin: 0 4px; }
+.attr-kpi-grid { display: grid; grid-template-columns: repeat(6,1fr); gap: 14px; }
+.attr-kpi-card { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-left: 3px solid rgba(26,151,175,.5); border-radius: var(--radius-md); padding: 18px 22px; transition: background .2s; }
+.attr-kpi-card:hover { background: rgba(255,255,255,.065); }
+.attr-kpi-card.c2 { border-left-color: rgba(0,115,152,.55); }
+.attr-kpi-card.c3 { border-left-color: rgba(46,74,90,.55); }
+.attr-kpi-card.c4 { border-left-color: rgba(95,163,122,.55); }
+.attr-kpi-card.c5 { border-left-color: rgba(139,2,77,.5); }
+.attr-kpi-card.c6 { border-left-color: rgba(237,139,0,.5); }
+.attr-kpi-label { font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-on-dark-muted); font-weight: 500; margin-bottom: 8px; }
+.attr-kpi-value { font-family: 'IBM Plex Serif', serif; font-size: 38px; font-weight: 300; color: #fff; letter-spacing: -1px; line-height: 1; }
+.attr-kpi-value em { font-style: normal; font-size: 17px; font-weight: 400; color: var(--text-on-dark-muted); margin-left: 3px; }
+.attr-kpi-sub { margin-top: 7px; font-size: 11.5px; color: var(--text-on-dark-muted); }
+.attr-kpi-sub strong { color: var(--brand-primary); font-weight: 500; }
+.attr-kpi-delta { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 12px; line-height: 1; }
+.attr-kpi-delta.up { background: rgba(95,163,122,.15); color: #5FA37A; }
+.attr-kpi-delta.down { background: rgba(227,73,72,.15); color: #e66767; }
+.attr-kpi-delta.neutral { background: rgba(255,255,255,.08); color: var(--text-on-dark-muted); }
+.attr-kpi-sparkline { margin-top: 10px; height: 32px; }
+.attr-content { max-width: 1440px; margin: 0 auto; padding: 30px 32px 48px; }
+.attr-section-title { font-family: 'IBM Plex Serif', serif; font-size: 18px; font-weight: 400; color: var(--text-primary); margin-bottom: 4px; }
+.attr-section-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; }
+.attr-model-selector { display: inline-flex; background: var(--surface-chart); border: 1px solid var(--border-hairline); border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
+.attr-model-selector .attr-model-btn { font-family: inherit; font-size: 12.5px; font-weight: 500; color: var(--text-muted); padding: 8px 18px; cursor: pointer; border: none; background: transparent; border-right: 1px solid var(--border-hairline); transition: background .15s, color .15s; }
+.attr-model-selector .attr-model-btn:last-child { border-right: none; }
+.attr-model-selector .attr-model-btn:hover { background: var(--surface-page); color: var(--text-secondary); }
+.attr-model-selector .attr-model-btn.active { background: var(--brand-primary); color: #fff; }
+.attr-charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.attr-chart-card { background: var(--surface-chart); border: 1px solid var(--border-hairline); border-radius: 12px; padding: 24px 24px 18px; box-shadow: 0 1px 5px rgba(0,0,0,.05); display: flex; flex-direction: column; }
+.attr-chart-eyebrow { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); font-weight: 500; margin-bottom: 3px; }
+.attr-chart-title-text { font-family: 'IBM Plex Serif', serif; font-size: 15px; font-weight: 400; color: var(--text-primary); margin-bottom: 3px; }
+.attr-chart-subtitle { font-size: 11.5px; color: var(--text-muted); margin-bottom: 18px; }
+.attr-chart-container { position: relative; height: 260px; }
+.attr-breakdown-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-hairline); }
+.attr-breakdown-item { display: flex; flex-direction: column; gap: 3px; }
+.attr-breakdown-channel { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); font-weight: 500; }
+.attr-breakdown-value { font-family: 'IBM Plex Serif', serif; font-size: 20px; font-weight: 400; color: var(--text-primary); letter-spacing: -.5px; }
+.attr-breakdown-share { font-size: 11.5px; font-weight: 500; }
+.attr-breakdown-bar { height: 3px; background: var(--border-hairline); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+.attr-breakdown-bar-fill { height: 100%; border-radius: 2px; transition: width .5s ease; }
+.attr-area-legend { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-hairline); }
+.attr-legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-secondary); }
+.attr-legend-swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.attr-key-read { margin-top: 14px; background: #F0F7FB; border-left: 3px solid var(--brand-primary); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; padding: 10px 14px; font-size: 12px; color: var(--text-secondary); line-height: 1.55; }
+.attr-chart-card .attr-key-read { margin-top: auto; }
+.attr-key-read strong { color: var(--text-primary); }
+.attr-seg-section { margin-top: 24px; }
+.attr-seg-card { background: var(--surface-chart); border: 1px solid var(--border-hairline); border-radius: 12px; padding: 24px 24px 16px; box-shadow: 0 1px 5px rgba(0,0,0,.05); overflow-x: auto; }
+.attr-seg-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 8px; }
+.attr-seg-eyebrow { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); font-weight: 500; margin-bottom: 3px; }
+.attr-seg-title { font-family: 'IBM Plex Serif', serif; font-size: 15px; font-weight: 400; color: var(--text-primary); }
+.attr-seg-hint { font-size: 12px; color: var(--text-muted); }
+.attr-seg-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.attr-seg-table thead tr { border-bottom: 2px solid var(--border-hairline); }
+.attr-seg-table th { text-align: right; font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: .05em; text-transform: uppercase; padding: 0 12px 10px; white-space: nowrap; cursor: pointer; user-select: none; transition: color .12s; }
+.attr-seg-table th:first-child { text-align: left; padding-left: 0; }
+.attr-seg-table th:hover { color: var(--text-secondary); }
+.attr-seg-table th.sort-asc::after { content: ' \2191'; }
+.attr-seg-table th.sort-desc::after { content: ' \2193'; }
+.attr-seg-table th.sort-asc, .attr-seg-table th.sort-desc { color: var(--brand-primary); }
+.attr-seg-table tbody tr { border-bottom: 1px solid var(--border-hairline); transition: background .12s; }
+.attr-seg-table tbody tr:last-child { border-bottom: none; }
+.attr-seg-table tbody tr:hover { background: var(--surface-page); }
+.attr-seg-table td { padding: 11px 12px; text-align: right; color: var(--text-secondary); vertical-align: middle; }
+.attr-seg-table td:first-child { text-align: left; font-weight: 500; color: var(--text-primary); padding-left: 0; }
+.attr-td-muted { color: var(--text-muted) !important; }
+.attr-td-accent { color: var(--brand-primary) !important; font-weight: 600; }
+.attr-td-hi { color: var(--series-2) !important; font-weight: 500; }
+.attr-cpa-cell { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.attr-cpa-value { font-weight: 600; color: var(--text-primary); }
+.attr-cpa-track { width: 64px; height: 4px; background: var(--border-hairline); border-radius: 2px; overflow: hidden; }
+.attr-cpa-fill { height: 100%; border-radius: 2px; background: #8B024D; }
+.seg-fc-input { width: 90px; padding: 4px 8px; border: 1px solid var(--border-hairline); border-radius: 6px; font-size: 12.5px; text-align: right; background: var(--surface-page); color: var(--text-primary); font-family: inherit; transition: border-color .15s; }
+.seg-fc-input:focus { outline: none; border-color: var(--brand-primary); box-shadow: 0 0 0 2px rgba(0,82,136,.12); }
+.attr-seg-total td { padding: 12px 12px; text-align: right; color: var(--text-primary); border-top: 2px solid var(--border-hairline); background: var(--surface-page); }
+.attr-seg-total td:first-child { text-align: left; padding-left: 0; }
+.attr-chart-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 0; }
+.attr-chart-card-header-left { flex: 1; }
+.attr-chart-view-select {
+font-family: inherit; font-size: 11px; font-weight: 500;
+color: var(--brand-primary); background: rgba(26,151,175,0.07);
+border: 1px solid rgba(26,151,175,0.3); border-radius: var(--radius-sm);
+padding: 5px 22px 5px 9px; cursor: pointer; appearance: none;
+background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M1 1l3.5 3.5L8 1' stroke='%231A97AF' stroke-width='1.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+background-repeat: no-repeat; background-position: right 7px center;
+white-space: nowrap; flex-shrink: 0; margin-top: 2px; transition: background-color .15s, border-color .15s;
+}
+.attr-chart-view-select:focus { outline: none; border-color: var(--brand-primary); }
+.attr-chart-view-select option { color: #1a1a2e; background: #fff; }
+/* Incrementality section */
+.attr-incr-note { font-size: 11px; color: var(--text-muted); font-style: italic; margin-top: 8px; padding: 8px 12px; background: rgba(0,0,0,.02); border-radius: 6px; border-left: 2px solid var(--border-hairline); line-height: 1.5; }
+.attr-incr-section { margin-top: 32px; }
+.attr-incr-header { margin-bottom: 20px; }
+.attr-incr-eyebrow { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); font-weight: 500; margin-bottom: 3px; }
+.attr-incr-title { font-family: 'IBM Plex Serif', serif; font-size: 18px; font-weight: 400; color: var(--text-primary); margin-bottom: 4px; }
+.attr-incr-subtitle { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+.attr-incr-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+.attr-incr-kpi-card { background: var(--surface-chart); border: 1px solid var(--border-hairline); border-radius: 12px; padding: 18px 20px; box-shadow: 0 1px 5px rgba(0,0,0,.05); }
+.attr-incr-kpi-label { font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); font-weight: 500; margin-bottom: 8px; }
+.attr-incr-kpi-value { font-family: 'IBM Plex Serif', serif; font-size: 32px; font-weight: 300; color: var(--text-primary); letter-spacing: -1px; line-height: 1; }
+.attr-incr-kpi-value em { font-style: normal; font-size: 15px; font-weight: 400; color: var(--text-muted); margin-left: 3px; }
+.attr-incr-kpi-sub { margin-top: 7px; font-size: 11.5px; color: var(--text-muted); }
+.attr-incr-kpi-sub strong { font-weight: 500; }
+.attr-incr-kpi-sub .up { color: #5FA37A; }
+.attr-incr-kpi-sub .down { color: #e66767; }
+.attr-incr-kpi-sub .neutral { color: var(--text-muted); }
+.attr-incr-sample-warning { display: inline-flex; align-items: center; gap: 5px; margin-top: 0; font-size: 10.5px; font-weight: 500; padding: 3px 8px; border-radius: 12px; }
+.attr-incr-sample-warning.adequate { background: rgba(95,163,122,.12); color: #3A7A54; }
+.attr-incr-sample-warning.small { background: rgba(237,139,0,.12); color: #B36A00; }
+.attr-incr-sample-warning.insufficient { background: rgba(227,73,72,.12); color: #c44; }
+.attr-incr-charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 1400px) {
+.attr-kpi-grid { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 1000px) {
+.attr-kpi-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+.attr-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+.attr-kpi-grid { grid-template-columns: 1fr; }
+.attr-incr-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+.attr-incr-charts-grid { grid-template-columns: 1fr; }
+}
+.attr-ch-badge { display:inline-block; font-size:10px; font-weight:600; letter-spacing:.04em; padding:2px 7px; border-radius:20px; white-space:nowrap; }
+.attr-ch-display        { background:rgba(237,139,0,.12);  color:#B36A00; }
+.attr-ch-programmatic   { background:rgba(0,115,152,.12);  color:#005F7A; }
+.attr-ch-p2p            { background:rgba(26,151,175,.12); color:#0F7A8F; }
+.attr-ch-ehr            { background:rgba(95,163,122,.15); color:#3A7A54; }
+.attr-ch-enl            { background:rgba(139,2,77,.1);    color:#8B024D; }
+.attr-ch-paid-search    { background:rgba(74,74,106,.12);  color:#3A3A6A; }
+.attr-ch-website        { background:rgba(77,126,168,.12); color:#3A6A8A; }
+/* Filters */
+.filter-row {
+display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;
+padding: 12px 16px; background: var(--surface-chart); border-radius: 8px;
+border: 1px solid var(--border-hairline);
+}
+.filter-group { display: flex; flex-direction: column; gap: 4px; }
+.filter-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.filter-select {
+padding: 6px 10px; border: 1px solid var(--axis); border-radius: 6px;
+background: var(--surface-page); color: var(--text-primary);
+font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.filter-checks { display: flex; flex-wrap: wrap; gap: 6px; }
+.filter-checkbox {
+display: flex; align-items: center; gap: 4px;
+font-size: 12px; color: var(--text-secondary); cursor: pointer; white-space: nowrap;
+}
+.filter-checkbox input { cursor: pointer; }
+.df-ds-picklist { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.df-ds-checkbox-label { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--text-secondary); cursor: pointer; padding: 5px 10px; border: 1px solid var(--axis); border-radius: 6px; background: var(--surface-page); transition: background .15s, border-color .15s; white-space: nowrap; }
+.df-ds-checkbox-label:hover { border-color: var(--brand-primary); }
+.df-ds-checkbox-label:has(input:checked) { background: rgba(26,151,175,.08); border-color: var(--brand-primary); color: var(--text-primary); }
+.df-ds-checkbox { cursor: pointer; accent-color: var(--brand-primary); }
+/* Gantt */
+.gantt-container { margin-top: 12px; }
+.gantt-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 12px; }
+.gantt-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+.gantt-legend-swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.footer { padding: 20px 32px; text-align: center; font-size: 11px; color: var(--text-muted); }
+@media (max-width: 600px) {
+.charts { grid-template-columns: 1fr; }
+.chart-card { height: 280px; }
+.tab-bar { padding: 0 16px; }
+.tab-panel { padding: 16px; }
+.kpi-row { flex-direction: column; }
+.attr-kpi-grid { grid-template-columns: 1fr; }
+.attr-charts-grid { grid-template-columns: 1fr; }
+.attr-breakdown-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+<div class="dashboard-header">
+<img src="IMG" alt="ALT" style="height:56px; width:auto; flex-shrink:0; object-fit:contain;" />
+<div>
+<div class="header-product-label"><!--SLOT--></div>
+<h1><!--SLOT--></h1>
+<p><!--SLOT--></p>
+</div>
+</div>
+<div class="tab-panel tab-panel-nopad active" id="tab-1">
+<div class="evidence-tier">
+<div class="evidence-inner">
+<div class="evidence-label">Script Performance — Attribution View</div>
+<div class="attr-filters-row">
+<div class="attr-filter-group">
+<div class="attr-filter-label">Date Range</div>
+<select id="attr-date-select" class="attr-filter-select">
+<option value="all" selected>All Time</option>
+<option value="6m">Last 6 Months</option>
+<option value="3m">Last 3 Months</option>
+<option value="12m">Last 12 Months</option>
+<option value="ytd">Year to Date</option>
+</select>
+</div>
+<div class="attr-filter-divider"></div>
+<div class="attr-filter-group">
+<div class="attr-filter-label">Script Metric</div>
+<select id="attr-metric-select" class="attr-filter-select"><!--SLOT-->
+</select>
+</div>
+<div class="attr-filter-group">
+<div class="attr-filter-label">HCP Specialty</div>
+<select id="attr-specialty-select" class="attr-filter-select"><!--OPTS-->
+</select>
+</div>
+<div class="attr-filter-group">
+<div class="attr-filter-label">HCP Affiliation</div>
+<select id="attr-affiliation-select" class="attr-filter-select"><!--OPTS-->
+</select>
+</div>
+<div class="attr-filter-group">
+<div class="attr-filter-label">HCP Current Journey Stage</div>
+<select id="attr-journey-select" class="attr-filter-select"><!--OPTS-->
+</select>
+</div>
+</div>
+<div class="attr-kpi-grid">
+<div class="attr-kpi-card">
+<div class="attr-kpi-label">Targeted HCPs</div>
+<div class="attr-kpi-value" id="kpi-targeted-hcps">—</div>
+<div id="kpi-targeted-delta"></div>
+<div class="attr-kpi-sub">All HCPs in campaign universe</div>
+<div class="attr-kpi-sparkline" id="kpi-targeted-spark"></div>
+</div>
+<div class="attr-kpi-card c2">
+<div class="attr-kpi-label">HCPs Reached</div>
+<div class="attr-kpi-value" id="kpi-reached-hcps">—</div>
+<div id="kpi-reached-delta"></div>
+<div class="attr-kpi-sub" id="kpi-reached-pct"></div>
+<div class="attr-kpi-sparkline" id="kpi-reached-spark"></div>
+</div>
+<div class="attr-kpi-card c3">
+<div class="attr-kpi-label">HCPs Engaged</div>
+<div class="attr-kpi-value" id="kpi-engaged-hcps">—</div>
+<div id="kpi-engaged-delta"></div>
+<div class="attr-kpi-sub" id="kpi-engaged-pct"></div>
+<div class="attr-kpi-sparkline" id="kpi-engaged-spark"></div>
+</div>
+<div class="attr-kpi-card c4">
+<div class="attr-kpi-label">Engaged HCPs w/ Scripts</div>
+<div class="attr-kpi-value" id="kpi-eng-scripts-hcps">—</div>
+<div id="kpi-eng-scripts-delta"></div>
+<div class="attr-kpi-sub" id="kpi-eng-scripts-pct"></div>
+<div class="attr-kpi-sparkline" id="kpi-eng-scripts-spark"></div>
+</div>
+<div class="attr-kpi-card c5">
+<div class="attr-kpi-label">Engaged HCP Total Scripts</div>
+<div class="attr-kpi-value" id="kpi-eng-total-scripts">—</div>
+<div id="kpi-eng-total-scripts-delta"></div>
+<div class="attr-kpi-sub" id="kpi-eng-total-scripts-sub"></div>
+<div class="attr-kpi-sparkline" id="kpi-eng-total-scripts-spark"></div>
+</div>
+<div class="attr-kpi-card c6">
+<div class="attr-kpi-label">Avg. Time: Engagement to Script</div>
+<div class="attr-kpi-value" id="kpi-avg-time">—</div>
+<div class="attr-kpi-sub">Median conversion window across channels</div>
+</div>
+</div>
+</div>
+</div>
+<div class="attr-content">
+<div class="attr-section-title">Script Attribution</div>
+<div class="attr-section-desc">Scripts attributed to media channels using NPI-level data. Select an attribution model to redistribute credit across touchpoints.</div>
+<div class="attr-model-selector">
+<button class="attr-model-btn active" data-model="lastTouch">Last Touch</button>
+<button class="attr-model-btn" data-model="firstTouch">First Touch</button>
+<button class="attr-model-btn" data-model="multiTouch">Multi-touch (Linear)</button>
+<button class="attr-model-btn" data-model="mtaIncremental">Channel Lift</button>
+<button class="attr-model-btn" data-model="markovDataDriven">MTA (Markov)</button>
+<button class="attr-model-btn" data-model="shapleyValue">MTA (Shapley)</button>
+</div>
+<div class="attr-charts-grid">
+<div class="attr-chart-card">
+<div class="attr-chart-eyebrow">Attribution Analysis</div>
+<div class="attr-chart-title-text" id="attr-bar-title">TRx Attribution by Media Channel</div>
+<div class="attr-chart-subtitle" id="attr-bar-subtitle">Last-touch model — credit assigned to the final HCP touchpoint before script</div>
+<div class="attr-chart-container"><canvas id="attr-chart"></canvas></div>
+<div class="attr-breakdown-grid" id="attr-breakdown"><!--SLOT--></div></div>
+<div class="attr-key-read" id="attr-bar-observation"><!--SLOT--></div>
+</div>
+<div class="attr-chart-card">
+<div class="attr-chart-card-header">
+<div class="attr-chart-card-header-left">
+<div class="attr-chart-eyebrow">Trend Analysis</div>
+<div class="attr-chart-title-text" id="attr-area-title">Attribution Over Time — Channel Mix Shift</div>
+<div class="attr-chart-subtitle" id="attr-area-subtitle">Monthly TRx attributed by channel across campaign period</div>
+</div>
+<select class="attr-chart-view-select" id="attrAreaViewSelect" onchange="setAttrAreaView(this.value)">
+<option value="channel">By Channel</option>
+<option value="total">Total Attributed Scripts</option>
+</select>
+</div>
+<div class="attr-chart-container"><canvas id="attr-area-chart"></canvas></div>
+<div class="attr-area-legend" id="attrAreaLegend"><!--SLOT-->
+<div class="attr-legend-item" style="margin-left:auto">
+<svg width="24" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="24" y2="5" stroke="#4A4A6A" stroke-width="2" stroke-dasharray="5,4"/></svg>
+<span style="color:#4A4A6A;font-weight:500">Media Spend</span>
+</div></div>
+<div class="attr-area-legend" id="attrTotalLegend" style="display:none">
+<div class="attr-legend-item"><div class="attr-legend-swatch" style="background:var(--brand-primary)"></div>Total Attributed Scripts</div>
+<div class="attr-legend-item" style="margin-left:auto">
+<svg width="24" height="10" style="flex-shrink:0"><line x1="0" y1="5" x2="24" y2="5" stroke="#4A4A6A" stroke-width="2" stroke-dasharray="5,4"/></svg>
+<span style="color:#4A4A6A;font-weight:500">Media Spend</span>
+</div>
+</div>
+<div class="attr-key-read"><!--SLOT--></div>
+</div>
+</div>
+<div class="attr-incr-section">
+<div class="attr-incr-header">
+<div class="attr-incr-eyebrow">Causal Measurement</div>
+<div class="attr-incr-title">Incrementality Analysis</div>
+<div class="attr-incr-subtitle">Control vs. exposed holdout methodology &middot; Control group: N
+<span class="attr-incr-sample-warning CLS">BADGE</span>
+</div>
+</div>
+<div class="attr-incr-kpi-grid">
+<div class="attr-incr-kpi-card">
+<div class="attr-incr-kpi-label">Exposed Script Rate</div>
+<div class="attr-incr-kpi-value" id="incr-kpi-exp-rate">—</div>
+<div class="attr-incr-kpi-sub" id="incr-kpi-exp-rate-sub">scripts/HCP</div>
+</div>
+<div class="attr-incr-kpi-card">
+<div class="attr-incr-kpi-label">Incremental Lift</div>
+<div class="attr-incr-kpi-value" id="incr-kpi-lift">—</div>
+<div class="attr-incr-kpi-sub" id="incr-kpi-lift-sub">vs. control baseline</div>
+</div>
+<div class="attr-incr-kpi-card">
+<div class="attr-incr-kpi-label">Incremental Scripts</div>
+<div class="attr-incr-kpi-value" id="incr-kpi-incr-scripts">—</div>
+<div class="attr-incr-kpi-sub" id="incr-kpi-incr-scripts-sub">attributed to media exposure</div>
+</div>
+<div class="attr-incr-kpi-card">
+<div class="attr-incr-kpi-label">Cost Per Incremental Script</div>
+<div class="attr-incr-kpi-value" id="incr-kpi-cpis">—</div>
+<div class="attr-incr-kpi-sub" id="incr-kpi-cpis-sub">total spend / incremental scripts</div>
+</div>
+</div>
+<div class="attr-incr-charts-grid">
+<div class="attr-chart-card">
+<div class="attr-chart-card-header">
+<div class="attr-chart-card-header-left">
+<div class="attr-chart-eyebrow">Channel Incrementality</div>
+<div class="attr-chart-title-text" id="incr-bar-title">Incremental Scripts by Channel</div>
+<div class="attr-chart-subtitle" id="incr-bar-subtitle">Incremental scripts = exposed scripts − (exposed HCPs × control rate)</div>
+</div>
+<select class="attr-chart-view-select" id="incrBarViewSelect" onchange="setIncrBarView(this.value)">
+<option value="scripts">Incremental Scripts</option>
+<option value="lift">Lift %</option>
+</select>
+</div>
+<div class="attr-chart-container"><canvas id="incr-channel-chart"></canvas></div>
+<div class="attr-key-read" id="incr-channel-observation"></div>
+<div class="attr-incr-note">Channel values are proportionally normalized so they sum to the overall incremental total. Individual HCPs may be exposed to multiple channels, so raw per-channel counts overlap.</div>
+</div>
+<div class="attr-chart-card">
+<div class="attr-chart-eyebrow">Group Comparison</div>
+<div class="attr-chart-title-text" id="incr-compare-title">Script Rate: Exposed vs. Control</div>
+<div class="attr-chart-subtitle" id="incr-compare-subtitle">Scripts per HCP comparison across groups</div>
+<div class="attr-chart-container"><canvas id="incr-compare-chart"></canvas></div>
+<div class="attr-key-read" id="incr-compare-observation"></div>
+</div>
+</div>
+</div>
+<div class="attr-seg-section">
+<div class="attr-seg-card">
+<div class="attr-seg-header">
+<div>
+<div class="attr-seg-eyebrow">Scenario Planner</div>
+<div class="attr-seg-title">Attribution by Media Partner</div>
+</div>
+<div class="attr-seg-hint">Click any column header to sort &middot; NPI-level Last Touch attribution</div>
+</div>
+<table class="attr-seg-table" id="attrSegTable">
+<thead>
+<tr>
+<th onclick="sortAttrSeg(0)">Media Partner</th>
+<th onclick="sortAttrSeg(1)">Media Channel</th>
+<th onclick="sortAttrSeg(2)">Media Spend</th>
+<th onclick="sortAttrSeg(3)">Unique HCPs Reached</th>
+<th onclick="sortAttrSeg(4)">Unique HCPs Engaged</th>
+<th onclick="sortAttrSeg(5)">Incremental Scripts</th>
+<th onclick="sortAttrSeg(6)">Cost Per Incremental Script</th>
+<th onclick="sortAttrSeg(7)">Forecasted Media Spend</th>
+<th onclick="sortAttrSeg(8)">Forecasted Incremental Scripts</th>
+</tr>
+</thead>
+<tbody id="attrSegBody"></tbody>
+<tfoot id="attrSegFoot"></tfoot>
+</table>
+<div class="attr-key-read" style="margin-top:20px"><!--SLOT--></div>
+</div>
+</div>
+<div id="attr-hcp-filter-note" style="display:none;margin:16px 0 0;padding:10px 16px;background:rgba(26,151,175,.08);border:1px solid rgba(26,151,175,.2);border-radius:8px;font-size:12px;color:#2E4A5A">
+<strong>Note:</strong> HCP filters are applied to the KPI cards and attribution chart above. The trend chart and partner table show all HCPs regardless of filter selection.
+</div>
+</div>
+</div>
+</div>
+<div class="footer">Generated by Omnichannel Dashboard Agent</div>
+<script>
+var isDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches;
+document.querySelectorAll('.tab-btn').forEach(function(btn) {
+btn.addEventListener('click', function() {
+document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+btn.classList.add('active');
+document.getElementById(btn.dataset.tab).classList.add('active');
+});
+});
+(function(){
+var attrData=[/*DATA*/];
+var kpis=[/*DATA*/];
+var channelOrder=[/*DATA*/];
+var monthlyKpis=[/*DATA*/];
+var monthlyAttr=[/*DATA*/];
+var palBase=[/*DATA*/];
+var barColors=palBase.map(function(c){return c+'d2';});
+var barHover=palBase.map(function(c){return c;});
+var modelSubtitles={
+lastTouch:'Last-touch model — credit assigned to the final HCP touchpoint before script',
+firstTouch:'First-touch model — credit assigned to the initial HCP touchpoint in the journey',
+multiTouch:'Multi-touch linear model — credit distributed equally across all touchpoints',
+markovDataDriven:'Data-driven Markov model — incremental scripts weighted by channel removal effect on conversion',
+mtaIncremental:'Channel Lift model — normalized channel incrementality based on exposed vs. control group script rates',
+shapleyValue:'Shapley Value model — incremental scripts assigned by average marginal contribution across all channel coalitions'
+};
+var npiLookup=[/*DATA*/];
+var currentModel='lastTouch';
+var currentMetric='trx';
+var currentDateRange='all';
+var attrChart=null;
+var areaChart=null;
+function fmtN(n){ if(n>=1e6)return(n/1e6).toFixed(1)+'M'; if(n>=1e3)return n.toLocaleString('en-US'); return String(n); }
+function getHcpFilters(){
+var sp=document.getElementById('attr-specialty-select');
+var af=document.getElementById('attr-affiliation-select');
+var st=document.getElementById('attr-journey-select');
+return {
+specialty:sp?sp.value:'all',
+affiliation:af?af.value:'all',
+stage:st?st.value:'all'
+};
+}
+function hcpFiltersActive(){
+var f=getHcpFilters();
+return f.specialty!=='all'||f.affiliation!=='all'||f.stage!=='all';
+}
+function filterNpiData(){
+var f=getHcpFilters();
+var base=dateRangeActive()?filterNpiByDate(npiLookup):npiLookup;
+return base.filter(function(r){
+if(f.specialty!=='all'&&r.sp!==f.specialty) return false;
+if(f.affiliation!=='all'&&r.af!==f.affiliation) return false;
+if(f.stage!=='all'&&r.st!==f.stage) return false;
+return true;
+});
+}
+function dateRangeActive(){
+return currentDateRange!=='all';
+}
+function filterNpiByDate(rows){
+var monthKeys=getFilteredMonthKeys();
+if(!monthKeys||!monthKeys.length) return rows;
+var cutoff=monthKeys[0];
+var ceiling=monthKeys[monthKeys.length-1];
+return rows.filter(function(r){
+if(!r.mn||!r.mx) return true;
+return r.mx>=cutoff&&r.mn<=ceiling;
+});
+}
+function aggregateForModel(filtered,model){
+var result={};
+channelOrder.forEach(function(ch){ result[ch]={trx:0,nbrx:0,nrx:0}; });
+filtered.forEach(function(r){
+if(model==='lastTouch'||model==='markovDataDriven'){
+if(r.lt&&result[r.lt]){ result[r.lt].trx+=r.trx; result[r.lt].nbrx+=r.nbrx; result[r.lt].nrx+=r.nrx; }
+}else if(model==='firstTouch'){
+if(r.ft&&result[r.ft]){ result[r.ft].trx+=r.trx; result[r.ft].nbrx+=r.nbrx; result[r.ft].nrx+=r.nrx; }
+}else if(model==='multiTouch'){
+if(r.ch&&r.nc>0){
+var chs=r.ch.split('|');
+chs.forEach(function(ch){
+if(result[ch]){ result[ch].trx+=r.trx/r.nc; result[ch].nbrx+=r.nbrx/r.nc; result[ch].nrx+=r.nrx/r.nc; }
+});
+}
+}
+});
+return channelOrder.map(function(ch){ return {channel:ch,trx:Math.round(result[ch].trx),nbrx:Math.round(result[ch].nbrx),nrx:Math.round(result[ch].nrx)}; });
+}
+function computeMarkovFiltered(filtered){
+var START='__start__',CONV='__conv__',NULLS='__null__';
+var transitions={},channels={};
+function addT(from,to){if(!transitions[from])transitions[from]={};transitions[from][to]=(transitions[from][to]||0)+1;}
+var converters=filtered.filter(function(r){return r.hs&&(r.trx>0||r.nbrx>0||r.nrx>0);});
+var nonConverters=filtered.filter(function(r){return !r.hs||!(r.trx>0||r.nbrx>0||r.nrx>0);});
+converters.forEach(function(r){
+if(!r.ch)return;
+var path=r.ch.split('|');
+addT(START,path[0]);channels[path[0]]=1;
+for(var i=0;i<path.length-1;i++){addT(path[i],path[i+1]);channels[path[i+1]]=1;}
+addT(path[path.length-1],CONV);
+});
+nonConverters.forEach(function(r){
+if(!r.ch)return;
+var path=r.ch.split('|');
+addT(START,path[0]);channels[path[0]]=1;
+for(var i=0;i<path.length-1;i++){addT(path[i],path[i+1]);channels[path[i+1]]=1;}
+addT(path[path.length-1],NULLS);
+});
+var channelList=Object.keys(channels);
+if(!channelList.length)return aggregateForModel(filtered,'lastTouch');
+var transientStates=[START].concat(channelList);
+function convProb(exclude){
+var states=exclude?transientStates.filter(function(s){return s!==exclude;}):transientStates.slice();
+var n=states.length;
+var stateIdx={};states.forEach(function(s,i){stateIdx[s]=i;});
+var aug=[];
+for(var i=0;i<n;i++){
+var row=new Array(n+1);for(var j=0;j<=n;j++)row[j]=0;
+row[i]=1;
+var from=states[i],out=transitions[from]||{},total=0;
+for(var to in out){if(to===exclude)continue;total+=out[to];}
+if(total>0){for(var to in out){
+if(to===exclude)continue;
+var p=out[to]/total;
+if(to===CONV)row[n]=p;
+else if(to!==NULLS&&stateIdx[to]!==undefined)row[stateIdx[to]]-=p;
+}}
+aug.push(row);
+}
+for(var col=0;col<n;col++){
+var pivotRow=-1,pivotVal=0;
+for(var row=col;row<n;row++){if(Math.abs(aug[row][col])>pivotVal){pivotVal=Math.abs(aug[row][col]);pivotRow=row;}}
+if(pivotRow===-1||pivotVal<1e-12)continue;
+var tmp=aug[col];aug[col]=aug[pivotRow];aug[pivotRow]=tmp;
+var pv=aug[col][col];for(var j=col;j<=n;j++)aug[col][j]/=pv;
+for(var row=0;row<n;row++){if(row===col)continue;var f=aug[row][col];if(Math.abs(f)<1e-15)continue;for(var j=col;j<=n;j++)aug[row][j]-=f*aug[col][j];}
+}
+var si=stateIdx[START];
+return si!==undefined?Math.max(0,Math.min(1,aug[si][n])):0;
+}
+var baseline=convProb(null);
+if(baseline<1e-10)return aggregateForModel(filtered,'lastTouch');
+var effects={};
+channelList.forEach(function(ch){effects[ch]=Math.max(0,1-(convProb(ch)/baseline));});
+var totalEffect=0;for(var ch in effects)totalEffect+=effects[ch];
+if(totalEffect<1e-10)return aggregateForModel(filtered,'lastTouch');
+var FLOOR=0.01;
+var zeroChannels=channelList.filter(function(ch){return effects[ch]<1e-10;});
+if(zeroChannels.length>0&&zeroChannels.length<channelList.length){
+var floorTotal=FLOOR*zeroChannels.length;
+var nonZeroTotal=channelList.filter(function(ch){return effects[ch]>=1e-10;}).reduce(function(s,ch){return s+effects[ch];},0);
+var sf=(1-floorTotal)/(nonZeroTotal>0?nonZeroTotal:1);
+channelList.forEach(function(ch){effects[ch]=effects[ch]<1e-10?FLOOR:effects[ch]*sf;});
+}
+var adjTotal=0;for(var ch in effects)adjTotal+=effects[ch];
+var ltData=aggregateForModel(filtered,'lastTouch');
+var totalScripts={trx:0,nbrx:0,nrx:0};
+ltData.forEach(function(r){totalScripts.trx+=r.trx;totalScripts.nbrx+=r.nbrx;totalScripts.nrx+=r.nrx;});
+return channelOrder.map(function(ch){
+var w=(effects[ch]||0)/(adjTotal||1);
+return{channel:ch,trx:Math.round(totalScripts.trx*w),nbrx:Math.round(totalScripts.nbrx*w),nrx:Math.round(totalScripts.nrx*w)};
+});
+}
+function computeShapleyFiltered(filtered){
+var channels={},channelIdx={};
+var converters=filtered.filter(function(r){return r.hs&&(r.trx>0||r.nbrx>0||r.nrx>0);});
+converters.forEach(function(r){
+if(!r.ch)return;
+r.ch.split('|').forEach(function(ch){channels[ch]=1;});
+});
+var channelList=Object.keys(channels);
+var N=channelList.length;
+if(N===0||N>15)return aggregateForModel(filtered,'lastTouch');
+channelList.forEach(function(ch,i){channelIdx[ch]=i;});
+var coalitionConv={};
+converters.forEach(function(r){
+if(!r.ch)return;
+var pathChs=r.ch.split('|');
+var seen={};var mask=0;
+pathChs.forEach(function(ch){if(!seen[ch]&&channelIdx[ch]!==undefined){mask|=(1<<channelIdx[ch]);seen[ch]=1;}});
+if(!coalitionConv[mask])coalitionConv[mask]={trx:0,nbrx:0,nrx:0};
+coalitionConv[mask].trx+=r.trx;coalitionConv[mask].nbrx+=r.nbrx;coalitionConv[mask].nrx+=r.nrx;
+});
+function coalVal(sMask,metric){
+var total=0;for(var key in coalitionConv){var k=Number(key);if((k&sMask)===k&&k>0)total+=coalitionConv[k][metric];}return total;
+}
+var fact=[1];for(var i=1;i<=N;i++)fact[i]=fact[i-1]*i;
+var metrics=['trx','nbrx','nrx'];
+var shapley={};metrics.forEach(function(m){shapley[m]={};});
+for(var ci=0;ci<N;ci++){
+var chBit=1<<ci;
+var others=[];for(var j=0;j<N;j++){if(j!==ci)others.push(j);}
+var M=others.length;var totalSubsets=1<<M;
+metrics.forEach(function(metric){
+var phi=0;
+for(var mask=0;mask<totalSubsets;mask++){
+var cMask=0,sSize=0;
+for(var b=0;b<M;b++){if(mask&(1<<b)){cMask|=(1<<others[b]);sSize++;}}
+var w=fact[sSize]*fact[N-sSize-1]/fact[N];
+phi+=w*(coalVal(cMask|chBit,metric)-coalVal(cMask,metric));
+}
+shapley[metric][channelList[ci]]=phi;
+});
+}
+var ltData=aggregateForModel(filtered,'lastTouch');
+var totalScripts={trx:0,nbrx:0,nrx:0};
+ltData.forEach(function(r){totalScripts.trx+=r.trx;totalScripts.nbrx+=r.nbrx;totalScripts.nrx+=r.nrx;});
+return channelOrder.map(function(ch){
+var res={channel:ch};
+metrics.forEach(function(metric){
+var totalRaw=0;for(var k in shapley[metric])totalRaw+=shapley[metric][k];
+var w=totalRaw>0?(shapley[metric][ch]||0)/totalRaw:0;
+var total=totalScripts[metric];
+res[metric]=Math.round(total*w);
+});
+return res;
+});
+}
+function aggregateKpis(filtered){
+var targeted=0, reached=0, engaged=0, engWithScripts=0;
+var engTotalScripts={trx:0,nbrx:0,nrx:0};
+filtered.forEach(function(r){
+if(r.ct) return;
+targeted++;
+if(r.re) reached++;
+if(r.en) engaged++;
+if(r.en&&r.hs&&r.ch){
+engWithScripts++;
+engTotalScripts.trx+=r.trx;
+engTotalScripts.nbrx+=r.nbrx;
+engTotalScripts.nrx+=r.nrx;
+}
+});
+return {targeted:targeted,reached:reached,engaged:engaged,engagedWithScripts:engWithScripts,engagedTotalScripts:engTotalScripts};
+}
+function updateFilterNote(){
+var note=document.getElementById('attr-hcp-filter-note');
+if(!note) return;
+note.style.display=hcpFiltersActive()?'block':'none';
+}
+function getMetricLabel(m){ if(m==='trx')return'L'; if(m==='nbrx')return'L'; return'L'; }
+function getFilteredMonthKeys(){
+if(currentDateRange==='all') return null;
+var allMonths=(typeof rawMonths!=='undefined'&&rawMonths.length>0)?rawMonths:[];
+if(!allMonths||!allMonths.length) return null;
+var now=new Date(allMonths[allMonths.length-1]);
+var cutoff;
+if(currentDateRange==='3m'){
+cutoff=new Date(now); cutoff.setMonth(cutoff.getMonth()-3);
+}else if(currentDateRange==='6m'){
+cutoff=new Date(now); cutoff.setMonth(cutoff.getMonth()-6);
+}else if(currentDateRange==='12m'){
+cutoff=new Date(now); cutoff.setMonth(cutoff.getMonth()-12);
+}else if(currentDateRange==='ytd'){
+cutoff=new Date(now.getFullYear(),0,1);
+}else{
+return null;
+}
+return allMonths.filter(function(m){ return new Date(m)>=cutoff; });
+}
+function getFilteredMonthIndices(){
+var keys=getFilteredMonthKeys();
+if(!keys) return null;
+return keys.map(function(k){ return rawMonths.indexOf(k); }).filter(function(i){ return i>=0; });
+}
+function sumMonthlyKpi(kpiMap, monthKeys){
+if(!monthKeys) return 0;
+var total=0;
+monthKeys.forEach(function(k){
+if(kpiMap[k]) total+=kpiMap[k];
+});
+return total;
+}
+function sumMonthlyAttrForModel(model, monthKeys){
+var modelMap=monthlyAttr[model];
+if(!modelMap||!monthKeys) return null;
+var byChannel={};
+monthKeys.forEach(function(k){
+var chMap=modelMap[k];
+if(!chMap) return;
+for(var ch in chMap){
+if(!byChannel[ch]) byChannel[ch]={channel:ch,trx:0,nbrx:0,nrx:0};
+byChannel[ch].trx+=chMap[ch].trx;
+byChannel[ch].nbrx+=chMap[ch].nbrx;
+byChannel[ch].nrx+=chMap[ch].nrx;
+}
+});
+return Object.values(byChannel);
+}
+function updateKpis(){
+var mk=currentMetric;
+var targetedVal,reachedVal,engagedVal,engScriptsVal,engTotalScriptsVal;
+var hasDateFilter=dateRangeActive();
+var hasHcpFilter=hcpFiltersActive();
+var hasNpiDates=npiLookup.length>0&&npiLookup[0].mn!==undefined;
+if((hasHcpFilter||hasDateFilter)&&hasNpiDates){
+var filtered=filterNpiData();
+var agg=aggregateKpis(filtered);
+targetedVal=agg.targeted;
+reachedVal=agg.reached;
+engagedVal=agg.engaged;
+engScriptsVal=agg.engagedWithScripts;
+engTotalScriptsVal=agg.engagedTotalScripts[mk]||0;
+}else if(hasDateFilter&&!hasNpiDates){
+var monthKeys=getFilteredMonthKeys();
+targetedVal=sumMonthlyKpi(monthlyKpis.targeted||{},monthKeys);
+reachedVal=sumMonthlyKpi(monthlyKpis.reached||{},monthKeys);
+engagedVal=sumMonthlyKpi(monthlyKpis.engaged||{},monthKeys);
+engScriptsVal=sumMonthlyKpi(monthlyKpis.engagedWithScripts||{},monthKeys);
+var etsMap=monthlyKpis.engagedTotalScripts||{};
+engTotalScriptsVal=0;
+monthKeys.forEach(function(k){if(etsMap[k])engTotalScriptsVal+=(etsMap[k][mk]||0);});
+}else{
+targetedVal=kpis.targetedHcps||0;
+reachedVal=kpis.hcpsReached||0;
+engagedVal=kpis.hcpsEngaged||0;
+engScriptsVal=kpis.engagedHcpsWithScripts||0;
+engTotalScriptsVal=kpis.engagedHcpTotalScripts?kpis.engagedHcpTotalScripts[mk]||0:0;
+}
+var reachPct=targetedVal>0?((reachedVal/targetedVal)*100).toFixed(1):'0.0';
+var engPct=reachedVal>0?((engagedVal/reachedVal)*100).toFixed(1):'0.0';
+var scriptPct=engagedVal>0?((engScriptsVal/engagedVal)*100).toFixed(1):'0.0';
+var targetedEl=document.getElementById('kpi-targeted-hcps');
+var reachedEl=document.getElementById('kpi-reached-hcps');
+var engagedEl=document.getElementById('kpi-engaged-hcps');
+var engScriptsEl=document.getElementById('kpi-eng-scripts-hcps');
+var engTotalScriptsEl=document.getElementById('kpi-eng-total-scripts');
+var avgEl=document.getElementById('kpi-avg-time');
+var reachPctEl=document.getElementById('kpi-reached-pct');
+var engPctEl=document.getElementById('kpi-engaged-pct');
+var scriptPctEl=document.getElementById('kpi-eng-scripts-pct');
+var engTotalScriptsSubEl=document.getElementById('kpi-eng-total-scripts-sub');
+if(targetedEl) targetedEl.textContent=fmtN(targetedVal);
+if(reachedEl) reachedEl.textContent=fmtN(reachedVal);
+if(engagedEl) engagedEl.textContent=fmtN(engagedVal);
+if(engScriptsEl) engScriptsEl.textContent=fmtN(engScriptsVal);
+if(engTotalScriptsEl) engTotalScriptsEl.textContent=fmtN(engTotalScriptsVal);
+if(avgEl) avgEl.innerHTML=(kpis.avgTimeToScript||'—')+' <em>days</em>';
+if(reachPctEl) reachPctEl.innerHTML='<strong>'+reachPct+'%</strong> of targeted HCPs';
+if(engPctEl) engPctEl.innerHTML='<strong>'+engPct+'%</strong> of reached HCPs';
+if(scriptPctEl) scriptPctEl.innerHTML='<strong>'+scriptPct+'%</strong> of engaged HCPs';
+if(engTotalScriptsSubEl) engTotalScriptsSubEl.innerHTML=getMetricLabel(mk)+' from engaged HCPs w/ scripts';
+updateFilterNote();
+renderDeltasAndSparklines();
+}
+function renderDelta(elId,recent,prior,downIsGood){
+var el=document.getElementById(elId);
+if(!el) return;
+if(prior===0&&recent===0){el.innerHTML='';return;}
+var diff=recent-prior;
+var pctChange=prior>0?((diff/prior)*100).toFixed(1):diff>0?'100.0':'0.0';
+var isUp=diff>0;
+var isGood=downIsGood?!isUp:isUp;
+var cls=diff===0?'neutral':(isGood?'up':'down');
+var arrow=diff===0?'—':(isUp?'&#8599;':'&#8600;');
+el.innerHTML='<div class="attr-kpi-delta '+cls+'">'+arrow+' '+fmtN(Math.abs(diff))+' ('+pctChange+'%)</div>';
+}
+function renderSparkline(elId,values,fillColor,strokeColor){
+var el=document.getElementById(elId);
+if(!el) return;
+if(!values||values.length<2){el.innerHTML='';return;}
+var max=Math.max.apply(null,values);
+var min=Math.min.apply(null,values);
+var range=max-min||1;
+var w=el.offsetWidth||160;
+var h=32;
+var stepX=w/(values.length-1);
+var pts=values.map(function(v,i){
+var x=Math.round(i*stepX*10)/10;
+var y=Math.round((1-(v-min)/range)*(h-4)+2);
+return x+','+y;
+});
+var polyline=pts.join(' ');
+var areaPath='M'+pts[0]+' L'+pts.join(' L')+' L'+(Math.round((values.length-1)*stepX*10)/10)+','+h+' L0,'+h+' Z';
+el.innerHTML='<svg width="'+w+'" height="'+h+'" style="display:block">'
++'<path d="'+areaPath+'" fill="'+(fillColor||'rgba(26,151,175,.1)')+'" />'
++'<polyline points="'+polyline+'" fill="none" stroke="'+(strokeColor||'rgba(26,151,175,.5)')+'" stroke-width="1.5" />'
++'</svg>';
+}
+function renderDeltasAndSparklines(){
+var mk=currentMetric;
+if(!monthlyKpis.targeted||typeof rawMonths==='undefined'||!rawMonths.length) return;
+var tMap=monthlyKpis.targeted||{};
+var rMap=monthlyKpis.reached||{};
+var eMap=monthlyKpis.engaged||{};
+var esMap=monthlyKpis.engagedWithScripts||{};
+var etsMap=monthlyKpis.engagedTotalScripts||{};
+var activeMonths=(typeof rawMonths!=='undefined')?rawMonths:[];
+var filteredIdx=getFilteredMonthIndices();
+var currentPeriod=filteredIdx?filteredIdx.map(function(i){return activeMonths[i];}):activeMonths;
+var periodLen=currentPeriod.length;
+var firstCurrentIdx=activeMonths.indexOf(currentPeriod[0]);
+var priorStart=firstCurrentIdx-periodLen;
+var hasPrior=priorStart>=0&&periodLen>0;
+if(hasPrior){
+var priorPeriod=activeMonths.slice(priorStart,firstCurrentIdx);
+var sumOver=function(map,keys){var s=0;keys.forEach(function(k){if(map[k])s+=map[k];});return s;};
+var sumOverScript=function(map,keys){var s=0;keys.forEach(function(k){if(map[k])s+=map[k][mk]||0;});return s;};
+renderDelta('kpi-targeted-delta',sumOver(tMap,currentPeriod),sumOver(tMap,priorPeriod),false);
+renderDelta('kpi-reached-delta',sumOver(rMap,currentPeriod),sumOver(rMap,priorPeriod),false);
+renderDelta('kpi-engaged-delta',sumOver(eMap,currentPeriod),sumOver(eMap,priorPeriod),false);
+renderDelta('kpi-eng-scripts-delta',sumOver(esMap,currentPeriod),sumOver(esMap,priorPeriod),false);
+renderDelta('kpi-eng-total-scripts-delta',sumOverScript(etsMap,currentPeriod),sumOverScript(etsMap,priorPeriod),false);
+}else{
+['kpi-targeted-delta','kpi-reached-delta','kpi-engaged-delta','kpi-eng-scripts-delta','kpi-eng-total-scripts-delta'].forEach(function(id){
+var el=document.getElementById(id);if(el)el.innerHTML='';
+});
+}
+var sparkMonths=currentPeriod.slice(-12);
+var tSpark=sparkMonths.map(function(k){return tMap[k]||0;});
+var rSpark=sparkMonths.map(function(k){return rMap[k]||0;});
+var eSpark=sparkMonths.map(function(k){return eMap[k]||0;});
+var esSpark=sparkMonths.map(function(k){return esMap[k]||0;});
+var etsSpark=sparkMonths.map(function(k){return(etsMap[k]&&etsMap[k][mk])||0;});
+renderSparkline('kpi-targeted-spark',tSpark,'rgba(26,151,175,.1)','rgba(26,151,175,.5)');
+renderSparkline('kpi-reached-spark',rSpark,'rgba(0,115,152,.1)','rgba(0,115,152,.5)');
+renderSparkline('kpi-engaged-spark',eSpark,'rgba(46,74,90,.1)','rgba(46,74,90,.5)');
+renderSparkline('kpi-eng-scripts-spark',esSpark,'rgba(78,134,80,.1)','rgba(78,134,80,.5)');
+renderSparkline('kpi-eng-total-scripts-spark',etsSpark,'rgba(139,2,77,.1)','rgba(139,2,77,.5)');
+}
+function updateBreakdown(d){
+var values=channelOrder.map(function(ch){
+var row=d.find(function(r){return r.channel===ch});
+return row?Math.round(row[currentMetric]||0):0;
+});
+var total=values.reduce(function(a,b){return a+b},0);
+for(var i=0;i<channelOrder.length;i++){
+var v=values[i];
+var pct=total>0?((v/total)*100).toFixed(1):'0.0';
+var vEl=document.getElementById('bd-v'+i);
+var sEl=document.getElementById('bd-s'+i);
+var bEl=document.getElementById('bd-b'+i);
+if(vEl) vEl.textContent=v.toLocaleString();
+if(sEl) sEl.textContent=pct+'% share';
+if(bEl) bEl.style.width=pct+'%';
+}
+}
+Chart.register({
+id:'attrDataLabels',
+afterDatasetsDraw:function(chart){
+if(chart.canvas.id!=='attr-chart')return;
+var ctx=chart.ctx;
+chart.data.datasets.forEach(function(ds,i){
+var meta=chart.getDatasetMeta(i);
+var total=ds.data.reduce(function(a,b){return a+b},0);
+meta.data.forEach(function(bar,idx){
+var v=ds.data[idx];
+if(!v)return;
+var pct=((v/total)*100).toFixed(1);
+ctx.save();
+ctx.font='500 10.5px system-ui,-apple-system,sans-serif';
+ctx.fillStyle='#2E4A5A';
+ctx.textAlign='center';
+ctx.fillText(v.toLocaleString()+' ('+pct+'%)',bar.x,bar.y-8);
+ctx.restore();
+});
+});
+}
+});
+function updateBarObservation(){
+var d=getActiveModelData();
+if(!d||!d.length)return;
+var items=channelOrder.map(function(ch){
+var row=d.find(function(r){return r.channel===ch});
+return {channel:ch,value:row?Math.round(row[currentMetric]||0):0};
+});
+var total=items.reduce(function(a,b){return a+b.value},0);
+var el=document.getElementById('attr-bar-observation');
+if(!el||total===0)return;
+items.sort(function(a,b){return b.value-a.value});
+var top=items[0],topPct=((top.value/total)*100).toFixed(1);
+var second=items[1],secondPct=second?((second.value/total)*100).toFixed(1):'0.0';
+var text='<strong>Key Observation:</strong> <strong>'+top.channel+'</strong> accounts for '+topPct+'% of attributed scripts, dominating channel attribution.';
+if(second&&second.value>0){
+text+=' <strong>'+second.channel+'</strong> is the second-largest contributor at '+secondPct+'%, indicating meaningful influence in the prescribing journey.';
+}
+var others=items.slice(2).filter(function(v){return v.value>0});
+if(others.length>0){
+text+=' Switching to a multi-touch model redistributes credit more evenly across '+others.map(function(v){return v.channel}).join(' and ')+' touchpoints.';
+}
+el.innerHTML=text;
+}
+function getActiveModelData(){
+if(currentModel==='mtaIncremental'){
+return getMtaIncrementalData();
+}
+if(hcpFiltersActive()){
+var filtered=filterNpiData();
+if(currentModel==='markovDataDriven') return computeMarkovFiltered(filtered);
+if(currentModel==='shapleyValue') return computeShapleyFiltered(filtered);
+return aggregateForModel(filtered,currentModel);
+}
+var monthKeys=getFilteredMonthKeys();
+if(monthKeys && currentModel!=='markovDataDriven' && currentModel!=='shapleyValue'){
+var filtered2=sumMonthlyAttrForModel(currentModel,monthKeys);
+if(filtered2&&filtered2.length) return filtered2;
+}
+return attrData[currentModel];
+}
+function renderModel(){
+var d=getActiveModelData();
+if(!d||!d.length)return;
+var values=channelOrder.map(function(ch){
+var row=d.find(function(r){return r.channel===ch});
+return row?Math.round(row[currentMetric]||0):0;
+});
+var ml=getMetricLabel(currentMetric);
+var barTitle=document.getElementById('attr-bar-title');
+var barSub=document.getElementById('attr-bar-subtitle');
+if(barTitle) barTitle.textContent=ml+' Attribution by Media Channel';
+var subtitle=modelSubtitles[currentModel];
+if(hcpFiltersActive()&&currentModel==='mtaIncremental'){
+subtitle='HCP filters applied — showing overall Channel Lift (incrementality uses pre-computed control/exposed groups)';
+}
+if(hcpFiltersActive()&&(currentModel==='markovDataDriven'||currentModel==='shapleyValue')){
+subtitle+=' — computed on filtered HCP subset';
+}
+if(barSub) barSub.textContent=subtitle;
+updateBreakdown(d);
+updateBarObservation();
+if(attrChart)attrChart.destroy();
+var ctx=document.getElementById('attr-chart').getContext('2d');
+attrChart=new Chart(ctx,{
+type:'bar',
+data:{labels:channelOrder,datasets:[{data:values,backgroundColor:barColors.slice(0,channelOrder.length),hoverBackgroundColor:barHover.slice(0,channelOrder.length),borderRadius:5,borderSkipped:false}]},
+options:{
+responsive:true,maintainAspectRatio:false,
+layout:{padding:{top:28}},
+plugins:{
+legend:{display:false},
+tooltip:{backgroundColor:'#0B1E2A',titleColor:'#7AA5B8',bodyColor:'#fff',borderColor:'rgba(255,255,255,.1)',borderWidth:1,padding:12,callbacks:{label:function(c){return ' '+c.parsed.y.toLocaleString()+' '+ml;}}}
+},
+scales:{
+x:{grid:{display:false},border:{display:false},ticks:{color:'#5E7A8A',font:{size:11,weight:'500'}}},
+y:{grid:{color:'rgba(0,0,0,.05)'},border:{display:false},ticks:{color:'#5E7A8A',font:{size:10},callback:function(v){return v>=1e3?(v/1e3).toFixed(0)+'K':v;}}}
+}
+}
+});
+}
+var areaMonths=[/*DATA*/];
+var rawMonths=[/*DATA*/];
+var areaChannelDataFull=[/*DATA*/];
+var chKeyMap=[/*DATA*/];
+function buildMtaIncrAreaData(){
+if(!incrData||!incrData.monthly||!rawMonths||!rawMonths.length) return areaChannelDataFull;
+var mtaAll=getMtaIncrementalData();
+var metrics=['trx','nbrx','nrx'];
+var channelShares={};
+metrics.forEach(function(mk){
+var total=mtaAll.reduce(function(s,c){return s+(c[mk]||0);},0);
+channelShares[mk]={};
+mtaAll.forEach(function(c){
+channelShares[mk][c.channel]=total>0?(c[mk]||0)/total:0;
+});
+});
+var ctrl=incrData.overall.control;
+var ctrlHcps=ctrl.hcps||1;
+var expHcps=incrData.overall.exposed.hcps||1;
+var result={};
+channelOrder.forEach(function(ch){
+var key=chKeyMap[ch]||ch.toLowerCase().replace(/[s]+/g,'');
+result[key]={trx:new Array(rawMonths.length).fill(0),nbrx:new Array(rawMonths.length).fill(0),nrx:new Array(rawMonths.length).fill(0)};
+});
+rawMonths.forEach(function(mk,mi){
+var m=incrData.monthly[mk];
+if(!m) return;
+metrics.forEach(function(metric){
+var ctrlRate=ctrlHcps>0?((m.ctrl&&m.ctrl[metric])||0)/ctrlHcps:0;
+var expScripts=(m.exp&&m.exp[metric])||0;
+var monthIncr=Math.max(0,expScripts-(expHcps*ctrlRate));
+channelOrder.forEach(function(ch){
+var key=chKeyMap[ch]||ch.toLowerCase().replace(/[s]+/g,'');
+var share=channelShares[metric][ch]||0;
+if(result[key]) result[key][metric][mi]=Math.round(monthIncr*share);
+});
+});
+});
+return result;
+}
+function buildAreaDataForModel(model){
+if(model==='mtaIncremental') return buildMtaIncrAreaData();
+if(model==='lastTouch'||model==='markovDataDriven'||model==='shapleyValue') return areaChannelDataFull;
+var modelMap=monthlyAttr[model];
+if(!modelMap||!rawMonths||!rawMonths.length) return areaChannelDataFull;
+var result={};
+channelOrder.forEach(function(ch){
+var key=chKeyMap[ch]||ch.toLowerCase().replace(/[\s]+/g,'');
+result[key]={trx:new Array(rawMonths.length).fill(0),nbrx:new Array(rawMonths.length).fill(0),nrx:new Array(rawMonths.length).fill(0)};
+});
+rawMonths.forEach(function(mk,mi){
+var cm=modelMap[mk];
+if(!cm) return;
+for(var ch in cm){
+var key=chKeyMap[ch]||ch.toLowerCase().replace(/[\s]+/g,'');
+if(result[key]){
+result[key].trx[mi]=Math.round(cm[ch].trx||0);
+result[key].nbrx[mi]=Math.round(cm[ch].nbrx||0);
+result[key].nrx[mi]=Math.round(cm[ch].nrx||0);
+}
+}
+});
+return result;
+}
+function getActiveAreaData(){ return buildAreaDataForModel(currentModel); }
+var areaSpendData=[/*DATA*/];
+var currentAreaView='channel';
+var areaColors=palBase.map(function(c){return c+'a6';});
+var areaBorders=palBase.map(function(c){return c+'e6';});
+function getActiveAreaIndices(){
+var indices=getFilteredMonthIndices();
+if(!indices){
+return areaMonths.map(function(_,i){return i;});
+}
+return indices;
+}
+function getActiveMonthLabels(){ return getActiveAreaIndices().map(function(i){return areaMonths[i];}); }
+function getActiveSpend(){ return getActiveAreaIndices().map(function(i){return areaSpendData[i]||0;}); }
+function getChannelArray(ad,chKey,metric){
+var obj=ad[chKey];
+if(!obj) return [];
+if(Array.isArray(obj)) return obj;
+return obj[metric]||obj.trx||[];
+}
+function getActiveChannelValues(chKey){
+var ad=getActiveAreaData();
+var arr=getChannelArray(ad,chKey,currentMetric);
+return getActiveAreaIndices().map(function(i){return arr[i]||0;});
+}
+function getActiveTotalData(){
+var ad=getActiveAreaData();
+var indices=getActiveAreaIndices();
+return indices.map(function(i){
+var sum=0;
+for(var k in ad){
+var arr=getChannelArray(ad,k,currentMetric);
+sum+=(arr[i]||0);
+}
+return sum;
+});
+}
+function getChannelDatasets(){
+var ds=[];
+var keys=Object.keys(areaChannelDataFull);
+for(var i=0;i<keys.length;i++){
+ds.push({label:channelOrder[i]||keys[i],data:getActiveChannelValues(keys[i]),fill:true,backgroundColor:areaColors[i%areaColors.length],borderColor:areaBorders[i%areaBorders.length],borderWidth:1.5,pointRadius:0,tension:.4,yAxisID:'y',stack:'scripts'});
+}
+ds.push({label:'Media Spend',data:getActiveSpend(),fill:false,backgroundColor:'transparent',borderColor:'#4A4A6A',borderWidth:2.5,borderDash:[6,4],pointRadius:0,pointHoverRadius:4,pointHoverBackgroundColor:'#4A4A6A',tension:.4,yAxisID:'y2',order:0});
+return ds;
+}
+function renderAreaChart(){
+if(areaChart)areaChart.destroy();
+var ctx=document.getElementById('attr-area-chart').getContext('2d');
+var labels=getActiveMonthLabels();
+var isTotal=currentAreaView==='total';
+var datasets=isTotal?[
+{label:'Total Attributed Scripts',data:getActiveTotalData(),fill:true,backgroundColor:'rgba(26,151,175,0.15)',borderColor:'rgba(26,151,175,0.9)',borderWidth:2.5,pointRadius:0,pointHoverRadius:4,tension:.4,yAxisID:'y',order:1},
+{label:'Media Spend',data:getActiveSpend(),fill:false,backgroundColor:'transparent',borderColor:'#4A4A6A',borderWidth:2.5,borderDash:[6,4],pointRadius:0,pointHoverRadius:4,pointHoverBackgroundColor:'#4A4A6A',tension:.4,yAxisID:'y2',order:0}
+]:getChannelDatasets();
+areaChart=new Chart(ctx,{
+type:'line',
+data:{labels:labels,datasets:datasets},
+options:{
+responsive:true,maintainAspectRatio:false,
+interaction:{mode:'index',intersect:false},
+plugins:{
+legend:{display:false},
+tooltip:{backgroundColor:'#0B1E2A',titleColor:'#7AA5B8',bodyColor:'#E2EEF3',borderColor:'rgba(255,255,255,.1)',borderWidth:1,padding:12,callbacks:{label:function(c){
+if(c.dataset.label==='Media Spend')return ' Media Spend: $'+(c.parsed.y/1000).toFixed(0)+'k';
+return ' '+c.dataset.label+': '+Math.round(c.parsed.y)+' '+getMetricLabel(currentMetric);
+}}}
+},
+scales:{
+x:{stacked:!isTotal,grid:{display:false},border:{display:false},ticks:{color:'#5E7A8A',font:{size:10},maxTicksLimit:10,maxRotation:0}},
+y:{stacked:!isTotal,grid:{color:'rgba(0,0,0,.05)'},border:{display:false},ticks:{color:'#5E7A8A',font:{size:10},callback:function(v){return v>=1e3?(v/1e3).toFixed(1)+'K':v;}}},
+y2:{stacked:false,grid:{display:false},border:{color:'#DDE6EA',display:true,width:1},position:'right',ticks:{color:'#4A4A6A',font:{size:10,weight:'500'},callback:function(v){return '$'+(v/1000).toFixed(0)+'k';},maxTicksLimit:6}}
+}
+}
+});
+var ml=getMetricLabel(currentMetric);
+var modelNames={lastTouch:'Last Touch',firstTouch:'First Touch',multiTouch:'Multi-touch Linear',mtaIncremental:'Channel Lift',markovDataDriven:'MTA (Markov)',shapleyValue:'MTA (Shapley)'};
+var mn=modelNames[currentModel]||'Last Touch';
+if(isTotal){
+document.getElementById('attr-area-title').textContent='Attribution Over Time — Total Scripts';
+document.getElementById('attr-area-subtitle').textContent='Monthly total '+ml+' attributed across all channels ('+mn+')';
+document.getElementById('attrAreaLegend').style.display='none';
+document.getElementById('attrTotalLegend').style.display='flex';
+}else{
+document.getElementById('attr-area-title').textContent='Attribution Over Time — Channel Mix Shift';
+document.getElementById('attr-area-subtitle').textContent='Monthly '+ml+' attributed by channel ('+mn+')';
+document.getElementById('attrAreaLegend').style.display='flex';
+document.getElementById('attrTotalLegend').style.display='none';
+}
+}
+window.setAttrAreaView=function(view){
+currentAreaView=view;
+renderAreaChart();
+};
+renderAreaChart();
+var segRows=[/*DATA*/];
+var maxCPIS=Math.max.apply(null,segRows.map(function(r){return r.cpis||0}));
+var segSortCol=-1,segSortAsc=true;
+var segSortKeys=['partner','channel','spendN','reachedN','engagedN','incrN','cpis','fcSpendN','fcIncrN'];
+function fmtSegK(n){
+if(n>=1e6)return(n/1e6).toFixed(1)+'M';
+if(n>=1e3)return(n/1e3).toFixed(1)+'k';
+return String(Math.round(n));
+}
+function parseCurrency(v){
+return Number(String(v).replace(/[^0-9.-]/g,''))||0;
+}
+segRows.forEach(function(r,i){r._idx=i;r._fcSpendN=r.fcSpendN||0;});
+function recalcFcIncr(r){
+if(r.cpis>0)return Math.round(r._fcSpendN/r.cpis);
+return r._fcSpendN>0&&r.spendN>0?Math.round(r.incrN*(r._fcSpendN/r.spendN)):0;
+}
+function renderSegTotals(){
+var tfoot=document.getElementById('attrSegFoot');
+if(!tfoot)return;
+var totSpend=0,totReached=0,totEngaged=0,totIncr=0,totCpis=0,totFcSpend=0,totFcIncr=0,cpisCount=0;
+segRows.forEach(function(r){
+totSpend+=r.spendN||0;totReached+=r.reachedN||0;totEngaged+=r.engagedN||0;
+totIncr+=r.incrN||0;totFcSpend+=r._fcSpendN||0;totFcIncr+=recalcFcIncr(r);
+if(r.cpis>0){totCpis+=r.cpis;cpisCount++;}
+});
+var avgCpis=cpisCount>0?Math.round(totCpis/cpisCount):0;
+tfoot.innerHTML='<tr class="attr-seg-total">'
++'<td><strong>TOTAL</strong></td><td></td>'
++'<td><strong>$'+fmtSegK(totSpend)+'</strong></td>'
++'<td><strong>'+fmtSegK(totReached)+'</strong></td>'
++'<td><strong>'+fmtSegK(totEngaged)+'</strong></td>'
++'<td><strong>'+fmtSegK(totIncr)+'</strong></td>'
++'<td><strong>$'+avgCpis+'</strong></td>'
++'<td><strong>$'+fmtSegK(totFcSpend)+'</strong></td>'
++'<td><strong>'+fmtSegK(totFcIncr)+'</strong></td></tr>';
+}
+function renderSegTable(data){
+var tbody=document.getElementById('attrSegBody');
+if(!tbody)return;
+tbody.innerHTML='';
+data.forEach(function(r){
+var barW=maxCPIS>0?Math.round(((r.cpis||0)/maxCPIS)*100):0;
+var chSlug=(r.channel||'').toLowerCase().replace(/[^a-z]/g,'-');
+var fcIncrVal=recalcFcIncr(r);
+var tr=document.createElement('tr');
+tr.innerHTML='<td>'+r.partner+'</td>'
++'<td><span class="attr-ch-badge attr-ch-'+chSlug+'">'+r.channel+'</span></td>'
++'<td>'+r.spend+'</td>'
++'<td>'+r.reached+'</td>'
++'<td>'+r.engaged+'</td>'
++'<td class="attr-td-hi">'+r.incr+'</td>'
++'<td><div class="attr-cpa-cell"><span class="attr-cpa-value">$'+((r.cpis||0).toLocaleString())+'</span><div class="attr-cpa-track"><div class="attr-cpa-fill" style="width:'+barW+'%"></div></div></div></td>'
++'<td><input type="text" class="seg-fc-input" data-idx="'+r._idx+'" value="$'+fmtSegK(r._fcSpendN)+'" /></td>'
++(function(){var arrow='';if(fcIncrVal>r.incrN)arrow='<span style="color:#5FA37A;margin-left:5px;font-size:11px;">▲</span>';else if(fcIncrVal<r.incrN)arrow='<span style="color:#e34948;margin-left:5px;font-size:11px;">▼</span>';return'<td>'+fmtSegK(fcIncrVal)+arrow+'</td>';})();
+tbody.appendChild(tr);
+});
+renderSegTotals();
+tbody.querySelectorAll('.seg-fc-input').forEach(function(inp){
+inp.addEventListener('change',function(){
+var idx=Number(this.getAttribute('data-idx'));
+var row=segRows[idx];
+if(!row)return;
+row._fcSpendN=parseCurrency(this.value);
+this.value='$'+fmtSegK(row._fcSpendN);
+var fcCell=this.parentElement.nextElementSibling;
+if(fcCell){var fv=recalcFcIncr(row);var arr='';if(fv>row.incrN)arr='<span style="color:#5FA37A;margin-left:5px;font-size:11px;">▲</span>';else if(fv<row.incrN)arr='<span style="color:#e34948;margin-left:5px;font-size:11px;">▼</span>';fcCell.innerHTML=fmtSegK(fv)+arr;}
+renderSegTotals();
+});
+});
+}
+window.sortAttrSeg=function(col){
+var ths=document.querySelectorAll('#attrSegTable th');
+ths.forEach(function(th){th.classList.remove('sort-asc','sort-desc');});
+if(segSortCol===col)segSortAsc=!segSortAsc;else{segSortCol=col;segSortAsc=true;}
+ths[col].classList.add(segSortAsc?'sort-asc':'sort-desc');
+var key=segSortKeys[col];
+if(key==='fcSpendN')key='_fcSpendN';
+var sorted=[].concat(segRows).sort(function(a,b){
+var av=key==='_fcSpendN'?a._fcSpendN:a[key],bv=key==='_fcSpendN'?b._fcSpendN:b[key];
+if(typeof av==='string')return segSortAsc?av.localeCompare(bv):bv.localeCompare(av);
+return segSortAsc?av-bv:bv-av;
+});
+renderSegTable(sorted);
+};
+renderSegTable(segRows);
+var incrData=[/*DATA*/];
+var incrChannelChart=null;
+var incrCompareChart=null;
+var currentIncrBarView='scripts';
+function computeIncrKpis(){
+var mk=currentMetric;
+var ctrl=incrData.overall.control;
+var exp=incrData.overall.exposed;
+var monthKeys=getFilteredMonthKeys();
+var ctrlScripts,expScripts,ctrlHcps=ctrl.hcps,expHcps=exp.hcps;
+if(monthKeys&&incrData.monthly){
+ctrlScripts=0;expScripts=0;
+monthKeys.forEach(function(k){
+var m=incrData.monthly[k];
+if(m){
+if(m.ctrl)ctrlScripts+=m.ctrl[mk]||0;
+if(m.exp)expScripts+=m.exp[mk]||0;
+}
+});
+}else{
+ctrlScripts=ctrl[mk]||0;
+expScripts=exp[mk]||0;
+}
+var ctrlRate=ctrlHcps>0?ctrlScripts/ctrlHcps:0;
+var expRate=expHcps>0?expScripts/expHcps:0;
+var lift=ctrlRate>0?((expRate-ctrlRate)/ctrlRate)*100:0;
+var incrScripts=Math.max(0,expScripts-(expHcps*ctrlRate));
+var totalSpend=incrData.overall.totalSpend||0;
+var cpis=incrScripts>0?totalSpend/incrScripts:0;
+return {ctrlRate:ctrlRate,expRate:expRate,lift:lift,incrScripts:Math.round(incrScripts),cpis:cpis,ctrlHcps:ctrlHcps,expHcps:expHcps,ctrlScripts:ctrlScripts,expScripts:expScripts};
+}
+function computeChannelIncr(){
+var mk=currentMetric;
+var rateKey=mk==='trx'?'ctrlTrxRate':mk==='nbrx'?'ctrlNbrxRate':'ctrlNrxRate';
+var raw=(incrData.byChannel||[]).map(function(ch){
+var ctrlRate=ch[rateKey]||0;
+var expRate=ch.hcpCount>0?(ch[mk]||0)/ch.hcpCount:0;
+var lift=ctrlRate>0?((expRate-ctrlRate)/ctrlRate)*100:0;
+var incrScripts=Math.max(0,(ch[mk]||0)-(ch.hcpCount*ctrlRate));
+var spend=(incrData.spendByChannel||{})[ch.channel]||0;
+var cpis=incrScripts>0?spend/incrScripts:0;
+return{channel:ch.channel,hcpCount:ch.hcpCount,expRate:expRate,ctrlRate:ctrlRate,lift:lift,rawIncr:Math.round(incrScripts),incrScripts:Math.round(incrScripts),cpis:Math.round(cpis),spend:spend};
+});
+var overallKpi=computeIncrKpis();
+var overallIncr=overallKpi.incrScripts;
+var rawSum=raw.reduce(function(s,c){return s+c.rawIncr;},0);
+if(rawSum>0&&overallIncr>0){
+raw.forEach(function(c){
+c.incrScripts=Math.round(c.rawIncr*(overallIncr/rawSum));
+});
+}
+return raw;
+}
+function getMtaIncrementalData(){
+var metrics=['trx','nbrx','nrx'];
+var result={};
+metrics.forEach(function(mk){
+var rateKey=mk==='trx'?'ctrlTrxRate':mk==='nbrx'?'ctrlNbrxRate':'ctrlNrxRate';
+var raw=(incrData.byChannel||[]).map(function(ch){
+var ctrlRate=ch[rateKey]||0;
+var incrScripts=Math.max(0,(ch[mk]||0)-(ch.hcpCount*ctrlRate));
+return{channel:ch.channel,rawIncr:Math.round(incrScripts)};
+});
+var ctrl=incrData.overall.control;
+var exp=incrData.overall.exposed;
+var ctrlHcps=ctrl.hcps||1;
+var overallCtrlRate=ctrlHcps>0?(ctrl[mk]||0)/ctrlHcps:0;
+var overallIncr=Math.max(0,Math.round((exp[mk]||0)-(exp.hcps*overallCtrlRate)));
+var rawSum=raw.reduce(function(s,c){return s+c.rawIncr;},0);
+var scale=(rawSum>0&&overallIncr>0)?overallIncr/rawSum:1;
+raw.forEach(function(c){
+if(!result[c.channel]) result[c.channel]={channel:c.channel};
+result[c.channel][mk]=Math.round(c.rawIncr*scale);
+});
+});
+return Object.values(result);
+}
+function updateIncrKpis(){
+var kpi=computeIncrKpis();
+var ml=getMetricLabel(currentMetric);
+var expRateEl=document.getElementById('incr-kpi-exp-rate');
+var liftEl=document.getElementById('incr-kpi-lift');
+var incrEl=document.getElementById('incr-kpi-incr-scripts');
+var cpisEl=document.getElementById('incr-kpi-cpis');
+if(expRateEl)expRateEl.innerHTML=kpi.expRate.toFixed(2)+'<em> '+ml+'/HCP</em>';
+if(liftEl){
+var liftClass=kpi.lift>0?'up':kpi.lift<0?'down':'neutral';
+liftEl.innerHTML=(kpi.lift>0?'+':'')+kpi.lift.toFixed(1)+'<em>%</em>';
+var liftSub=document.getElementById('incr-kpi-lift-sub');
+if(liftSub)liftSub.innerHTML='<span class="'+liftClass+'">'+(kpi.lift>0?'&#8599;':kpi.lift<0?'&#8600;':'—')+'</span> vs. control baseline ('+kpi.ctrlRate.toFixed(2)+' '+ml+'/HCP)';
+}
+if(incrEl)incrEl.textContent=fmtN(kpi.incrScripts);
+if(cpisEl)cpisEl.innerHTML=kpi.cpis>0?'$'+fmtN(Math.round(kpi.cpis)):'—';
+var incrSub=document.getElementById('incr-kpi-incr-scripts-sub');
+if(incrSub)incrSub.textContent=fmtN(kpi.incrScripts)+' '+ml+' attributed to media exposure';
+var cpisSub=document.getElementById('incr-kpi-cpis-sub');
+if(cpisSub)cpisSub.textContent=kpi.cpis>0?'$'+fmtN(Math.round(incrData.overall.totalSpend))+' spend / '+fmtN(kpi.incrScripts)+' incr. scripts':'No incremental scripts detected';
+}
+function getIncrChannelData(){
+if(currentModel==='markovDataDriven'||currentModel==='shapleyValue'){
+var modelData=attrData[currentModel]||[];
+var mk=currentMetric;
+var liftData=computeChannelIncr();
+return modelData.map(function(r){
+var liftRow=liftData.find(function(c){return c.channel===r.channel;});
+return{channel:r.channel,incrScripts:Math.round(r[mk]||0),lift:liftRow?liftRow.lift:0,hcpCount:liftRow?liftRow.hcpCount:0,expRate:liftRow?liftRow.expRate:0,ctrlRate:liftRow?liftRow.ctrlRate:0,spend:liftRow?liftRow.spend:0,cpis:0};
+});
+}
+return computeChannelIncr();
+}
+function getIncrModelLabel(){
+if(currentModel==='markovDataDriven') return 'MTA (Markov)';
+if(currentModel==='shapleyValue') return 'MTA (Shapley)';
+return 'Channel Lift';
+}
+function renderIncrChannelChart(){
+if(incrChannelChart)incrChannelChart.destroy();
+var chData=getIncrChannelData();
+if(!chData.length)return;
+var isLift=currentIncrBarView==='lift';
+var labels=chData.map(function(c){return c.channel;});
+var values=chData.map(function(c){return isLift?c.lift:c.incrScripts;});
+var colors=chData.map(function(c,i){
+var chIdx=channelOrder.indexOf(c.channel);
+var base=chIdx>=0?palBase[chIdx%palBase.length]:palBase[i%palBase.length];
+return(isLift?c.lift:c.incrScripts)>=0?base+'cc':'#e34948cc';
+});
+var ctx=document.getElementById('incr-channel-chart').getContext('2d');
+incrChannelChart=new Chart(ctx,{
+type:'bar',
+data:{labels:labels,datasets:[{data:values,backgroundColor:colors,borderRadius:4,borderSkipped:false,maxBarThickness:28}]},
+options:{
+indexAxis:'y',responsive:true,maintainAspectRatio:false,
+layout:{padding:{right:20}},
+plugins:{
+legend:{display:false},
+tooltip:{backgroundColor:'#0B1E2A',titleColor:'#7AA5B8',bodyColor:'#fff',borderColor:'rgba(255,255,255,.1)',borderWidth:1,padding:12,
+callbacks:{label:function(c){
+var ch=chData[c.dataIndex];
+if(isLift)return' Lift: '+(ch.lift>0?'+':'')+ch.lift.toFixed(1)+'%';
+return' '+ch.incrScripts.toLocaleString()+' incremental '+getMetricLabel(currentMetric);
+}}}
+},
+scales:{
+x:{grid:{color:'rgba(0,0,0,.05)'},border:{display:false},ticks:{color:'#5E7A8A',font:{size:10},callback:function(v){if(isLift)return v+'%';return v>=1e3?(v/1e3).toFixed(0)+'K':v;}}},
+y:{grid:{display:false},border:{display:false},ticks:{color:'#5E7A8A',font:{size:11,weight:'500'}}}
+}
+}
+});
+var ml=getMetricLabel(currentMetric);
+var modelLabel=getIncrModelLabel();
+document.getElementById('incr-bar-title').textContent=isLift?ml+' Lift % by Channel':'Incremental '+ml+' by Channel ('+modelLabel+')';
+document.getElementById('incr-bar-subtitle').textContent=isLift?'Percentage lift in script rate vs. control group':(currentModel==='markovDataDriven'||currentModel==='shapleyValue'?'Holdout incremental scripts distributed by '+modelLabel+' model weights':'Incremental scripts = exposed scripts \u2212 (exposed HCPs \u00d7 control rate)');
+var obs=document.getElementById('incr-channel-observation');
+if(obs&&chData.length>0){
+var sorted=[].concat(chData).sort(function(a,b){return b.incrScripts-a.incrScripts;});
+var top=sorted[0];
+var text='<strong>Key Observation:</strong> <strong>'+top.channel+'</strong> delivers the most incremental scripts ('+top.incrScripts.toLocaleString()+')';
+if(currentModel!=='markovDataDriven'&&currentModel!=='shapleyValue'){
+text+=' with a '+(top.lift>0?'+':'')+top.lift.toFixed(1)+'% lift.';
+} else {
+text+=' under the '+modelLabel+' model.';
+}
+if(sorted.length>1){
+var neg=sorted.filter(function(c){return c.incrScripts<=0;});
+if(neg.length>0){
+text+=' '+neg.map(function(c){return'<strong>'+c.channel+'</strong>';}).join(' and ')+' show'+(neg.length===1?'s':'')+' minimal incremental contribution.';
+}
+}
+obs.innerHTML=text;
+}
+}
+window.setIncrBarView=function(view){
+currentIncrBarView=view;
+renderIncrChannelChart();
+};
+function renderIncrCompareChart(){
+if(incrCompareChart)incrCompareChart.destroy();
+var chData=computeChannelIncr();
+var kpi=computeIncrKpis();
+var labels=['Overall'].concat(chData.map(function(c){return c.channel;}));
+var expRates=[kpi.expRate].concat(chData.map(function(c){return c.expRate;}));
+var ctrlRates=[kpi.ctrlRate].concat(chData.map(function(c){return c.ctrlRate;}));
+var ctx=document.getElementById('incr-compare-chart').getContext('2d');
+incrCompareChart=new Chart(ctx,{
+type:'bar',
+data:{labels:labels,datasets:[
+{label:'Exposed Group',data:expRates,backgroundColor:'rgba(26,151,175,0.7)',borderRadius:4,borderSkipped:false,maxBarThickness:20},
+{label:'Control Group',data:ctrlRates,backgroundColor:'rgba(74,74,106,0.5)',borderRadius:4,borderSkipped:false,maxBarThickness:20}
+]},
+options:{
+responsive:true,maintainAspectRatio:false,
+plugins:{
+legend:{display:true,labels:{color:'#5E7A8A',usePointStyle:true,pointStyle:'rectRounded',padding:12,font:{size:11}}},
+tooltip:{backgroundColor:'#0B1E2A',titleColor:'#7AA5B8',bodyColor:'#fff',borderColor:'rgba(255,255,255,.1)',borderWidth:1,padding:12,
+callbacks:{label:function(c){return' '+c.dataset.label+': '+c.parsed.y.toFixed(2)+' '+getMetricLabel(currentMetric)+'/HCP';}}}
+},
+scales:{
+x:{grid:{display:false},border:{display:false},ticks:{color:'#5E7A8A',font:{size:10},maxRotation:45}},
+y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'},border:{display:false},ticks:{color:'#5E7A8A',font:{size:10}}}
+}
+}
+});
+var ml=getMetricLabel(currentMetric);
+var obs=document.getElementById('incr-compare-observation');
+if(obs){
+var text='<strong>Key Observation:</strong> Exposed HCPs write '+kpi.expRate.toFixed(2)+' '+ml+'/HCP vs. '+kpi.ctrlRate.toFixed(2)+' '+ml+'/HCP in the control group';
+if(kpi.lift>0){text+=', demonstrating a <strong>+'+kpi.lift.toFixed(1)+'% incremental lift</strong> from media exposure.';}
+else{text+='. No measurable incremental lift detected from media exposure.';}
+obs.innerHTML=text;
+}
+}
+function updateIncrementality(){
+updateIncrKpis();
+renderIncrChannelChart();
+renderIncrCompareChart();
+}
+updateIncrementality();
+document.querySelectorAll('.attr-model-selector .attr-model-btn').forEach(function(btn){
+btn.addEventListener('click',function(){
+document.querySelectorAll('.attr-model-selector .attr-model-btn').forEach(function(b){b.classList.remove('active');});
+btn.classList.add('active');
+currentModel=btn.dataset.model;
+renderModel();
+if(typeof renderAreaChart==='function') renderAreaChart();
+if(typeof updateIncrementality==='function') updateIncrementality();
+});
+});
+document.getElementById('attr-metric-select').addEventListener('change',function(e){
+currentMetric=e.target.value;
+updateKpis();
+renderModel();
+if(typeof renderAreaChart==='function') renderAreaChart();
+if(typeof updateIncrementality==='function') updateIncrementality();
+});
+var dateEl=document.getElementById('attr-date-select');
+if(dateEl) dateEl.addEventListener('change',function(e){
+currentDateRange=e.target.value;
+updateKpis();
+renderModel();
+if(typeof renderAreaChart==='function') renderAreaChart();
+if(typeof updateIncrementality==='function') updateIncrementality();
+});
+var specEl=document.getElementById('attr-specialty-select');
+if(specEl) specEl.addEventListener('change',function(){ updateKpis(); renderModel(); if(typeof renderAreaChart==='function') renderAreaChart(); });
+var affilEl=document.getElementById('attr-affiliation-select');
+if(affilEl) affilEl.addEventListener('change',function(){ updateKpis(); renderModel(); if(typeof renderAreaChart==='function') renderAreaChart(); });
+var journeyEl=document.getElementById('attr-journey-select');
+if(journeyEl) journeyEl.addEventListener('change',function(){ updateKpis(); renderModel(); if(typeof renderAreaChart==='function') renderAreaChart(); });
+updateKpis();
+renderModel();
+})();
+</script>
+</body>
+</html>

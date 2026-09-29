@@ -1,0 +1,22 @@
+{
+  "template_source_commit": "1c27c91",
+  "approved_skeleton_sha": "d4b316390277",
+  "template_initialized_at": "2026-09-29T15:37:26+05:30",
+  "updated_at": "2026-09-29T16:59:15+05:30",
+  "last_build": {
+    "build_id": "20260929-165448",
+    "status": "warning",
+    "dir": "C:\\Users\\Sakthivel.Govindhara\\OneDrive - EVERSANA\\_Eversana_Intouch_2025_\\AI Agency - Intouch\\Enablement_MTA_Servier_Voranigo_Agent\\projects\\taiho_lonsurf\\workspace\\builds\\20260929-165448"
+  },
+  "last_good_build": {
+    "build_id": "20260929-165448",
+    "dir": "C:\\Users\\Sakthivel.Govindhara\\OneDrive - EVERSANA\\_Eversana_Intouch_2025_\\AI Agency - Intouch\\Enablement_MTA_Servier_Voranigo_Agent\\projects\\taiho_lonsurf\\workspace\\builds\\20260929-165448",
+    "health": {
+      "total_rows": 10018942
+    },
+    "date_coverage": {
+      "first_month": "2025-01-01",
+      "last_month": "2026-09-01"
+    }
+  }
+}
