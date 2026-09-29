@@ -1,0 +1,10 @@
+{"at": "2026-09-29T16:09:08+05:30", "build_id": "20260929-160545", "test": "structure_diff_vs_approved_layout", "identical": true, "changed_lines": 0}
+{"at": "2026-09-29T16:09:31+05:30", "build_id": "20260929-160545", "test": "headless_render", "ok": true, "console_errors": []}
+{"at": "2026-09-29T16:51:45+05:30", "build_id": "20260929-164653", "test": "structure_diff_vs_approved_layout", "identical": true, "changed_lines": 0}
+{"at": "2026-09-29T16:56:14+05:30", "build_id": "20260929-160545", "test": "headless_render", "ok": true, "console_errors": []}
+{"at": "2026-09-29T16:58:55+05:30", "build_id": "20260929-165448", "test": "structure_diff_vs_approved_layout", "identical": true, "changed_lines": 0}
+{"at": "2026-09-29T17:00:28+05:30", "build_id": "20260929-165448", "test": "visual_review", "aligned": true, "measured_issues": 1, "vision_issues": 0}
+{"at": "2026-09-29T17:06:33+05:30", "build_id": "20260929-160545", "test": "visual_review", "aligned": false, "measured_issues": 24, "vision_issues": 1}
+{"at": "2026-09-29T17:13:08+05:30", "build_id": "20260929-160545", "test": "visual_review", "aligned": false, "measured_issues": 24, "vision_issues": 2}
+{"at": "2026-09-29T17:18:42+05:30", "build_id": "20260929-165448", "test": "visual_review", "aligned": true, "measured_issues": 1, "vision_issues": 0}
+{"at": "2026-09-29T17:22:23+05:30", "build_id": "20260929-165448", "test": "headless_render", "ok": true, "console_errors": []}

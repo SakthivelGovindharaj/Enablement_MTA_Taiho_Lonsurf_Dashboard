@@ -1,0 +1,145 @@
+{
+  "brand": {
+    "key": "taiho_lonsurf",
+    "company": "TAIHO",
+    "display_name": "LONSURF",
+    "dashboard_title": "LONSURF HCP Omnichannel MTA Dashboard",
+    "product_label": "HCP Omnichannel Dashboard",
+    "description": null,
+    "logo_path": "assets/logo.svg",
+    "theme": {
+      "primary": "#3472A1",
+      "secondary": "#DC3545",
+      "navy": "#001F66",
+      "channel_palette": [
+        "#3472A1",
+        "#0D6EFD",
+        "#DC3545",
+        "#0DCAF0",
+        "#198754",
+        "#FFC107",
+        "#FCD003",
+        "#2A78A3"
+      ]
+    },
+    "partner_display_names": {
+      "DEEPINTENT": "DeepIntent",
+      "ONCOLOGY_LEARNING_NETWORK": "Oncology Learning Network",
+      "AGENCY_OPTIMIZERX": "Agency OptimizerRx",
+      "ACTICS": "Actics",
+      "NPPA_ENGAGE": "NPPA Engage",
+      "DOXIMITY": "Doximity",
+      "OPTIMIZERX_HCP": "OptimizerRx HCP",
+      "SKIPTA": "Skipta",
+      "FORMEDICS": "Formedics",
+      "SFMC": "SFMC",
+      "HEALIO": "Healio",
+      "TARGETEDONC": "Targeted Oncology",
+      "SERMO": "Sermo",
+      "GI_ONCOLOGY_NOW": "GI Oncology Now",
+      "ONCOLOGY_NURSING_NEWS": "Oncology Nursing News",
+      "IMPIRICUS": "Impiricus",
+      "ONCLIVE": "OncLive"
+    }
+  },
+  "repos": {
+    "reference": {
+      "slug": "SakthivelGovindharaj/Enablement_MTA_Generic_Dashboard_Template",
+      "branch": "main",
+      "template_file": "index.html"
+    },
+    "brand": {
+      "slug": "SakthivelGovindharaj/Enablement_MTA_Taiho_Lonsurf_Dashboard",
+      "branch": "main",
+      "dashboard_path": "index.html"
+    }
+  },
+  "snowflake": {
+    "auth_mode": "odbc",
+    "database": "SAND_INTOUCH_RAW_DB",
+    "schema": "AD-HOC",
+    "table": "OMNICHANNEL_MTA_TAIHO_LONSURF",
+    "odbc": {
+      "driver": "SnowflakeDSIIDriver",
+      "server": "EVERSANA-EVERSANA.snowflakecomputing.com",
+      "authenticator": "externalbrowser",
+      "user": "SAKTHIVEL.GOVINDHARAJ@EVERSANA.COM",
+      "warehouse": "ANALYST_WH",
+      "role": "EDAINTOUCHADHOC"
+    },
+    "service_account": {
+      "account": "EVERSANA-EVERSANA",
+      "user": null,
+      "private_key_path": null,
+      "warehouse": "ANALYST_WH",
+      "role": "EDAINTOUCHADHOC"
+    }
+  },
+  "column_mapping": {
+    "npi": "NPI",
+    "date": "DATE",
+    "channel": "CHANNEL",
+    "partner": "PARTNER",
+    "reached_flag": "IS_HCP_REACHED",
+    "engaged_flag": "IS_HCP_ENGAGED",
+    "source_type": {
+      "column": "DATA_SOURCE",
+      "media_values": [
+        "PLD",
+        "TARGET_ONLY"
+      ],
+      "rx_values": [
+        "PRESCRIPTION"
+      ]
+    },
+    "scripts": {
+      "trx": "TRX",
+      "nrx": "NRX",
+      "nbrx": "NBRX"
+    },
+    "script_labels": {
+      "trx": "TRx",
+      "nrx": "NRx",
+      "nbrx": "NBRx"
+    },
+    "spend": null,
+    "hcp_attributes": {
+      "table": "OMNICHANNEL_MTA_TAIHO_LONSURF",
+      "npi": "NPI",
+      "specialty": "HCP_SPECIALTY",
+      "affiliation": null,
+      "stage": "HCP_CURRENT_JOURNEY_STAGE"
+    },
+    "control_group": {
+      "mode": "unexposed_prescribers"
+    },
+    "channel_order": null
+  },
+  "validation": {
+    "min_rows": 1000,
+    "max_row_drop_pct": 20,
+    "max_null_pct": {
+      "npi": 0.5,
+      "date": 1.0,
+      "channel": 1.0
+    },
+    "max_days_since_latest_media": 14,
+    "max_days_since_latest_rx": 45,
+    "min_rx_npis_matched_to_media": 1,
+    "partial_month_min_ratio": 0.5
+  },
+  "notifications": {
+    "recipients": [
+      "sakthivel.govindharaj@eversana.com"
+    ],
+    "backend": "outbox",
+    "smtp": {
+      "host": null,
+      "port": 587,
+      "use_tls": true,
+      "user": null,
+      "password_env": "MTA_SMTP_PASSWORD",
+      "from": null
+    }
+  }
+}
